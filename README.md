@@ -2,11 +2,11 @@ A little helper library that given an (optionaly weighted) list of methods choos
 
 ```csharp
 	//add actions to the selector
-	var selctor = RandomSelector
+	var selector = RandomSelector
 			.AddAction(() => { doSomething(); })
 			.AddAction(() => { doSomeOtherThing(); });
 
-	selector.Choose(); //randomly picks and action to run
+	selector.Choose(); //randomly picks an action to run
 ```
 
 You can also optionally weight each action.
@@ -18,5 +18,5 @@ You can also optionally weight each action.
 			.AddAction(0.2, () => { maybeDoThis(); })
 			.AddAction(0.1, () => { smallChanceOfThis(); });
 
-	selector.Choose(); //randomly picks and action to run
+	selector.Choose(); //randomly picks an action to run
 ```
