@@ -5,29 +5,29 @@ using System.Text;
 
 namespace RandomChoice
 {
-    public class RandomSelector
+    public class RandomSelector<T>
     {
         /// <summary>
-        /// Add a new action to the selection
+        /// Add a new value to the selection
         /// </summary>
         /// <param name="weight">percentage chance to call this method</param>
-        /// <param name="action">method to be called</param>
-        public static RandomSelectorInstance Add(double weight, Action action)
+        /// <param name="value">method to be called</param>
+        public static RandomSelectorInstance<T> Add(double weight, T value)
         {
-            var instance = new RandomSelectorInstance();
-            instance.Add(weight, action);
+            var instance = new RandomSelectorInstance<T>();
+            instance.Add(weight, value);
 
             return instance;
         }
 
         /// <summary>
-        /// Add a new action to the selection
+        /// Add a new value to the selection
         /// </summary>
-        /// <param name="action">method to be called</param>
-        public static RandomSelectorInstance Add(Action action)
+        /// <param name="value">method to be called</param>
+        public static RandomSelectorInstance<T> Add(T value)
         {
-            var instance = new RandomSelectorInstance();
-            instance.Add(action);
+            var instance = new RandomSelectorInstance<T>();
+            instance.Add(value);
 
             return instance;
         }
@@ -35,82 +35,82 @@ namespace RandomChoice
         /// <summary>
         /// Sets the Random being used
         /// </summary>
-        public static RandomSelectorInstance UsingRandom(Random random)
+        public static RandomSelectorInstance<T> UsingRandom(Random random)
         {
-            var instance = new RandomSelectorInstance();
+            var instance = new RandomSelectorInstance<T>();
             instance.UsingRandom(random);
 
             return instance;
         }
     }
 
-    public class RandomSelectorInstance
+
+    public class RandomSelectorInstance<T>
     {
         private Random _rand;
-        private List<ProportionValue<Action>> _actions;
+        private List<ProportionValue<T>> _values;
         private double _remainingProportion = 1.0;
 
         internal RandomSelectorInstance()
         {
             _rand = new Random();
-            _actions = new List<ProportionValue<Action>>();
+            _values = new List<ProportionValue<T>>();
         }
 
         /// <summary>
         /// Sets the Random being used
         /// </summary>
-        public RandomSelectorInstance UsingRandom(Random random)
+        public RandomSelectorInstance<T> UsingRandom(Random random)
         {
             _rand = random;
             return this;
         }
 
         /// <summary>
-        /// Add a new action to the selection
+        /// Add a new value to the selection
         /// </summary>
-        /// <param name="weight">percentage chance to call this method</param>
-        /// <param name="action">method to be called</param>
-        public RandomSelectorInstance Add(double weight, Action action)
+        /// <param name="weight">percentage return this value</param>
+        /// <param name="value">method to be called</param>
+        public RandomSelectorInstance<T> Add(double weight, T value)
         {
             _remainingProportion -= weight;
 
             if (_remainingProportion < 0)
                 throw new InvalidOperationException("The proportions in the collection do not add up to 1.");
 
-            _actions.Add(new ProportionValue<Action> { Proportion = weight, Value = action });
+            _values.Add(new ProportionValue<T> { Proportion = weight, Value = value });
 
             return this;
         }
 
         /// <summary>
-        /// Add a new action to the selection
+        /// Add a new value to the selection
         /// </summary>
-        /// <param name="action">method to be called</param>
-        public RandomSelectorInstance Add(Action action)
+        /// <param name="value">method to be called</param>
+        public RandomSelectorInstance<T> Add(T value)
         {
-            _actions.Add(new ProportionValue<Action> { Value = action });
+            _values.Add(new ProportionValue<T> { Value = value });
 
             return this;
         }
 
         /// <summary>
-        /// Chooses an action based on the weights provided
+        /// Chooses an value based on the weights provided
         /// </summary>
-        public void Choose()
+        public T Choose()
         {
-            if (_actions == null || !_actions.Any())
-                throw new InvalidOperationException("No Actions set.");
+            if (_values == null || !_values.Any())
+                throw new InvalidOperationException("No values set.");
 
             balanceProportions();
 
             var rnd = _rand.NextDouble();
 
-            foreach (var pa in _actions)
+            foreach (var pa in _values)
             {
                 if (rnd < pa.Proportion)
                 {
-                    pa.Value();
-                    return;
+                    return pa.Value;
                 }
 
                 rnd -= pa.Proportion.Value;
@@ -121,7 +121,7 @@ namespace RandomChoice
 
         private void balanceProportions()
         {
-            var unassignedActions = _actions.Where(a => !a.Proportion.HasValue);
+            var unassignedActions = _values.Where(a => !a.Proportion.HasValue);
 
             if (unassignedActions.Any())
             {
